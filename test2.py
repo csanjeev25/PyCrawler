@@ -4,8 +4,28 @@ import urllib
 from datetime import datetime
 import urllib.robotparser
 import queue
+import csv
+import lxml.html
 
 urllib3.disable_warnings() #disable certificate related warnings
+
+class ScrapeCallBack:
+    def __init__(self):
+        self.writer=csv.writer(open('countries.csv','w'))
+        self.fields=FIELDS
+        self.writer.writerow(self.fields)
+
+    def __call__(self,url,html):
+        if(re.search('/',html.decode('utf-8'))):
+            tree=lxml.html.fromstring(html)
+            row=[]
+            for field in self.fields:
+                 if (tree.cssselect('table > tr#places_%s__row > td.w2p_fw'%field)) is not None :
+                     try:
+                         row.append(tree.cssselect('table > tr#places_%s__row > td.w2p_fw'%field)[0].text_content())
+                         self.writer.writerow(row)
+                     except IndexError as e:
+                         print(tree.cssselect('table > tr#places_%s__row > td.w2p_fw'%field))
 
 
 def link_crawler(seed_url,link_regrex=None,delay=5,max_depth=2,max_urls=2,headers=None,proxy=None,num_retries=1,user_agent='wswp',scrape_callback=None):
@@ -83,6 +103,11 @@ def get_robots(url):
     rp.read()
     return(rp)
 
+FIELDS = ('area', 'population', 'iso', 'country', 'capital',
+'continent', 'tld', 'currency_code', 'currency_name', 'phone',
+'postal_code_format', 'postal_code_regex', 'languages',
+'neighbours')
+
 class Trottle:
     def __init__(self,delay):
         self.delay=delay        # amount of delay between downloads for each domain
@@ -98,6 +123,13 @@ class Trottle:
                 time.sleep(sleep_secs)
         self.domains[domain]=datetime.now()
 
+def scrape_callback(url, html):
+    if re.search('/view/', url):
+        tree = lxml.html.fromstring(html)
+        row = [tree.cssselect('table > tr#places_%s__row > td.w2p_fw' % field)[0].text_content() for field in FIELDS]
+        print(url, row)
+
 if __name__ == '__main__':
     link_crawler('https://www.cricbuzz.com/', delay=0, num_retries=1)
-    link_crawler('http://example.webscraping.com', '/(index|view)', delay=0, num_retries=1, max_depth=1,user_agent='GoodCrawler')
+    link_crawler('http://example.webscraping.com', delay=0, num_retries=1, max_depth=1,user_agent='GoodCrawler')
+    link_crawler('http://example.webscraping.com/',max_depth=-1, scrape_callback=ScrapeCallBack()) #'''Note that __call__ is a special method that is invoked when an object is "called" as a function, which is how the cache_callback is used in the link crawler. This means that scrape_callback(url, html) is equivalent to calling scrape_callback.__call__(url, html).'''
