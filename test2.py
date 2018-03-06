@@ -8,7 +8,7 @@ import queue
 urllib3.disable_warnings() #disable certificate related warnings
 
 
-def link_crawler(seed_url,link_regrex=None,delay=5,max_depth=2,max_urls=2,headers=None,proxy=None,num_retries=1,user_agent='wswp'):
+def link_crawler(seed_url,link_regrex=None,delay=5,max_depth=2,max_urls=2,headers=None,proxy=None,num_retries=1,user_agent='wswp',scrape_callback=None):
     #start crawling bitch
     print(seed_url)
     crawl_queue=queue.deque()
@@ -28,6 +28,8 @@ def link_crawler(seed_url,link_regrex=None,delay=5,max_depth=2,max_urls=2,header
             html=download(url,headers,proxy=proxy,num_retries=num_retries)
             links=[]
             depth=seen[url]
+            if scrape_callback:
+                links.extend(scrape_callback(url,html) or [])
             if depth!=max_depth:
                 if link_regrex:   # filter for links matching our regular expression
                     links.extend(link for link in get_links(html.decode('utf-8')) if re.match(link_regrex,link))
