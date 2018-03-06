@@ -64,12 +64,12 @@ def download(url,headers,proxy,num_retries,data=None):
             status=None
     return html.data
 
-def normalize(seed_url,link):   #Normalize this URL by removing hash and adding domain eg:'HTTP://www.Python.org/doc/#' to http://www.Python.org/doc/
+def normalize(seed_url,link):   #Normalize this URL by removing hash and adding domain eg:'HTTP://www.Python.org/doc/#' to http://www.Python.org/doc/  and here urllib.parse.urlparse returns Parse a URL into six components, returning a 6-tuple. This corresponds to the general structure of a URL: scheme://netloc/path;parameters?query#fragment.
     link,_ = urllib.parse.urldefrag(link)
     return urllib.parse.urljoin(seed_url,link)
 
 def same_domain(url1,url2):
-    return urlparse.urlparse(url1).netloc == urlparse.urlparse(url2).netloc
+    return urllib.parse.urlparse(url1).netloc == urllib.parse.urlparse(url2).netloc   #netloc gives us the hostname only i.e if url is http://www.cricbuzz.com/live-score only gives hostname=www.cricbuzz.com
 
 def get_links(html):
     webpage_regex = re.compile('<a[^>]+href=["\'](.*?)["\']', re.IGNORECASE) # a regular expression to extract all links from the webpage

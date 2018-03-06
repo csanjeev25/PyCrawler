@@ -1,13 +1,8 @@
-__builtins__
-__cached__
-__doc__
-__file__
-__loader__
-__name__
-__package__
-__path__
-__spec__
-__version__
-core
-old_where
-where
+Select any tag: *
+Select by tag <a>: a
+Select by class of "link": .link
+Select by tag <a> with class "link": a.link
+Select by tag <a> with ID "home": a#home
+Select by child <span> of tag <a>: a > span
+Select by descendant <span> of tag <a>: a span
+Select by tag <a> with attribute title of "Home": a[title=Home]
